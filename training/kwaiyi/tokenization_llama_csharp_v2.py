@@ -102,7 +102,7 @@ class LlamaTokenizer(PreTrainedTokenizer):
         self.vocab_file = vocab_file
         self.add_bos_token = add_bos_token
         self.add_eos_token = add_eos_token
-        stderr.write(vocab_file +  '!!!!!!!!\n')
+        # stderr.write(vocab_file +  '!!!!!!!!\n')
         path = '/'.join(vocab_file.split('/')[:-1])
         self.encode_lock = threading.Lock()
         self.encoder = subprocess.Popen([path + '/cstokenizer', '--encode', vocab_file], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
