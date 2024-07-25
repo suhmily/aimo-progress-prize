@@ -1,6 +1,6 @@
 # Model arguments
 # For definitions, see: src/h4/training/config.py
-model_name_or_path: data/numina-math-7b-cot # Or the model trained from Stage 1 with training/configs/stage-2-tir.yaml
+model_name_or_path: data/kwaiyi-math-7b-cot # Or the model trained from Stage 1 with training/configs/stage-2-tir.yaml
 model_revision: main
 torch_dtype: bfloat16
 attn_implementation: flash_attention_2
@@ -26,7 +26,7 @@ gradient_accumulation_steps: 1
 gradient_checkpointing: true
 gradient_checkpointing_kwargs:
   use_reentrant: False
-hub_model_id: numina-math-7b-tir
+hub_model_id: kwaiyi-math-7b-tir
 hub_private_repo: true
 hub_strategy: every_save
 learning_rate: 2.0e-05
@@ -36,9 +36,9 @@ logging_strategy: steps
 lr_scheduler_type: cosine
 max_steps: -1
 num_train_epochs: 4
-output_dir: data/numina-math-7b-tir
+output_dir: data/kwaiyi-math-7b-tir
 hub_model_revision: main
-run_name: numina-math-7b-tir
+run_name: kwaiyi-math-7b-tir
 overwrite_output_dir: true
 per_device_eval_batch_size: 8
 per_device_train_batch_size: 8
@@ -49,13 +49,13 @@ report_to:
 - wandb
 save_strategy: "no"
 seed: 42
-wandb_run_group: numina-math-7b-tir # Name of the W&B group to collect all runs of this experiment under. Use double-digits for {idx}, starting from 00.
+wandb_run_group: kwaiyi-math-7b-tir # Name of the W&B group to collect all runs of this experiment under. Use double-digits for {idx}, starting from 00.
 wandb_run_id: null # Set this to a globally unique string if you want a descriptive name of your run
 wandb_tags: # Use tags to filter runs on WandB
 - sft
 
 # 添加或修改这些设置
-wandb_project: "numina-math-7b-tir"  # 您可以选择一个适合您实验的项目名称
+wandb_project: "kwaiyi-math-7b-tir"  # 您可以选择一个适合您实验的项目名称
 wandb_entity: "suhmily-kuaishou"  # 这是您的用户名
 wandb_enabled: true
 warmup_ratio: 0.

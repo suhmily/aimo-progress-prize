@@ -51,6 +51,9 @@ class SFTConfig(transformers.TrainingArguments):
     packing: bool = field(
         default=True, metadata={"help": ("Whether to pack sequences of the dataset for faster training.")}
     )
+    dataset_num_proc: Optional[int] = field(
+        default=None, metadata={"help": ("Number of processes to use for dataset loading.")}
+    )
     push_to_hub_revision: bool = field(default=False, metadata={"help": ("Whether to push to a Hub revision/branch.")})
     reward_loss_fn: Optional[str] = field(
         default="NegLogSigmoid",

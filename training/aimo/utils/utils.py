@@ -170,13 +170,21 @@ def check_hub_revision_exists(training_args: SFTConfig):
                     )
 
 
-def get_tokenizer(model_args: ModelConfig, data_args: DataConfig, set_pad_token: bool = True) -> PreTrainedTokenizer:
+def get_tokenizer(model_args: ModelConfig, data_args: DataConfig, model_id: str, set_pad_token: bool = True) -> PreTrainedTokenizer:
     """Get the tokenizer for the model."""
-    tokenizer = AutoTokenizer.from_pretrained(
-        model_args.model_name_or_path,
-        revision=model_args.model_revision,
-        trust_remote_code=model_args.trust_remote_code,
-    )
+    if "kwaiyi" in model_id.lower():
+        from kwaiyi.tokenization_llama_csharp_v2 import LlamaTokenizer
+        tokenizer = LlamaTokenizer.from_pretrained(
+            "training/kwaiyi/model_zoo/tokenizer.128k.data_ratio",
+            trust_remote_code=True,    bos_token = '<s>',        add_bos_token = True, add_eos_token=True
+        )
+        print(f"Tokenizer: {tokenizer.bos_token_id}, {tokenizer.eos_token_id}, {tokenizer.encode('你好')}")
+    else:
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_args.model_name_or_path,
+            revision=model_args.model_revision,
+            trust_remote_code=model_args.trust_remote_code,
+        )
 
     # Hack for Qwen-14b which doesn't have an EOS token defined in the tokenizer
     if "qwen-14b" in model_args.model_name_or_path.lower():

@@ -91,6 +91,12 @@ def main():
     # Login to HuggingFace Hub if needed
     hf_login()
 
+    ################
+    # Load tokenizer
+    ################
+
+    tokenizer = get_tokenizer(model_config, data_config, sft_config.hub_model_id, set_pad_token=sft_config.packing)
+
     ###############
     # Load datasets
     ###############
@@ -100,10 +106,7 @@ def main():
         f"Training on the following datasets and their proportions: {[split + ' : ' + str(dset.num_rows) for split, dset in raw_datasets.items()]}"
     )
 
-    ################
-    # Load tokenizer
-    ################
-    tokenizer = get_tokenizer(model_config, data_config, set_pad_token=sft_config.packing)
+
 
     #######################
     # Load pretrained model

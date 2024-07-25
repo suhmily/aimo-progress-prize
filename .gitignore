@@ -2,6 +2,14 @@
 __pycache__/
 *.py[cod]
 *$py.class
+data/
+log/
+myenv_*/
+nohup*
+tokenizer.128k.data_ratio/
+*.json
+*.zip
+*.csv
 
 # C extensions
 *.so

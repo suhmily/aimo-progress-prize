@@ -1,20 +1,20 @@
 # Model arguments
 # For definitions, see: src/h4/training/config.py
-model_name_or_path: data/numina-math-7b-cot # Or the model trained from Stage 1 with training/configs/stage-2-tir.yaml
+model_name_or_path: /nlp_group/mlflow_monitor/gpt/pretrain/2kgpus-7b-scratch/2kgpus-7b-scratch_llama_7b_v0_128k_e1/artifacts/iter_0371000/hf_bin
 model_revision: main
 torch_dtype: bfloat16
 attn_implementation: flash_attention_2
 overwrite_hub_revision: true
 # Data training arguments
 # For definitions, see: src/h4/training/config.py
-block_size: 1024
+block_size: 2048
 chat_template: "{% for message in messages %}{% if (message['role'] == 'system')%}{{ '' }}{% elif (message['role'] == 'user')%}{{ '### Problem: ' + message['content'] + '\n' }}{% elif (message['role'] == 'assistant')%}{{ '### Solution: ' + message['content'] + '\n' }}{% endif %}{% if loop.last and message['role'] == 'user' and add_generation_prompt %}{{ '### Solution: ' }}{% endif %}{% endfor %}"
 dataset_mixer: 
-  AI-MO/NuminaMath-TIR: 1.0
+  AI-MO/NuminaMath-CoT: 1.0
 dataset_splits:
 - train
 - test
-preprocessing_num_workers: 8
+preprocessing_num_workers: 12
 
 # Training arguments with sensible defaults
 # Add other options from here: https://huggingface.co/docs/transformers/v4.26.1/en/main_classes/trainer#transformers.TrainingArguments
@@ -26,7 +26,7 @@ gradient_accumulation_steps: 1
 gradient_checkpointing: true
 gradient_checkpointing_kwargs:
   use_reentrant: False
-hub_model_id: numina-math-7b-tir
+hub_model_id: kwaiyi-math-7b-cot
 hub_private_repo: true
 hub_strategy: every_save
 learning_rate: 2.0e-05
@@ -35,10 +35,10 @@ logging_steps: 5
 logging_strategy: steps
 lr_scheduler_type: cosine
 max_steps: -1
-num_train_epochs: 4
-output_dir: data/numina-math-7b-tir
+num_train_epochs: 3
+output_dir: data/kwaiyi-math-7b-cot
 hub_model_revision: main
-run_name: numina-math-7b-tir
+run_name: kwaiyi-math-7b-cot
 overwrite_output_dir: true
 per_device_eval_batch_size: 8
 per_device_train_batch_size: 8
@@ -49,15 +49,14 @@ report_to:
 - wandb
 save_strategy: "no"
 seed: 42
-wandb_run_group: numina-math-7b-tir # Name of the W&B group to collect all runs of this experiment under. Use double-digits for {idx}, starting from 00.
-wandb_run_id: null # Set this to a globally unique string if you want a descriptive name of your run
-wandb_tags: # Use tags to filter runs on WandB
-- sft
+# 现有的 wandb 设置
+wandb_run_group: kwaiyi-math-7b-cot
+wandb_run_id: null
+wandb_tags:
+  - sft
 
 # 添加或修改这些设置
-wandb_project: "numina-math-7b-tir"  # 您可以选择一个适合您实验的项目名称
+wandb_project: "kwaiyi-math-7b-cot"  # 您可以选择一个适合您实验的项目名称
 wandb_entity: "suhmily-kuaishou"  # 这是您的用户名
 wandb_enabled: true
 warmup_ratio: 0.
-
-warmup_ratio: 0.1
