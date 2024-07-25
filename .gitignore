@@ -10,6 +10,7 @@ tokenizer.128k.data_ratio/
 *.json
 *.zip
 *.csv
+*.pkl
 
 # C extensions
 *.so

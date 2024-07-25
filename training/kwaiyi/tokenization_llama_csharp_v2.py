@@ -31,8 +31,11 @@ from typing import Any, Dict, List, Optional, Tuple
 import subprocess
 import sentencepiece as spm
 
-
+# 将你的项目目录添加到 Python 路径
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from tokenization_utils import AddedToken, PreTrainedTokenizer
+
+
 
 
 VOCAB_FILES_NAMES = {"vocab_file": "kwaii_tokenizer"}
@@ -50,7 +53,7 @@ VOCAB_FILES_NAMES = {"vocab_file": "kwaii_tokenizer"}
 # }
 
 
-class LlamaTokenizer(PreTrainedTokenizer):
+class CustomLlamaTokenizer(PreTrainedTokenizer):
     """
     Construct a Llama tokenizer. Based on byte-level Byte-Pair-Encoding.
 
@@ -96,6 +99,7 @@ class LlamaTokenizer(PreTrainedTokenizer):
             add_bos_token=add_bos_token,
             add_eos_token=add_eos_token,
             sp_model_kwargs=self.sp_model_kwargs,
+            vocab_file=vocab_file,
             clean_up_tokenization_spaces=clean_up_tokenization_spaces,
             **kwargs,
         )
@@ -123,30 +127,39 @@ class LlamaTokenizer(PreTrainedTokenizer):
             self.token2id[one['TokenStr'].encode('utf8')] = one['TokenID']
             self.special_id2token[one['TokenID']] = one['TokenStr']
 
-    def __getstate__(self):
-        # for pickle lovers
-        state = self.__dict__.copy()
-        del state["tokenizer"]
-        return state
+
+    def _lazy_init(self):
+        if self.encoder is None or self.decoder is None:
+            path = os.path.dirname(self.vocab_file)
+            self.encoder = subprocess.Popen([path + '/cstokenizer', '--encode', self.vocab_file], 
+                                            stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+            self.decoder = subprocess.Popen([path + '/cstokenizer', '--decode', self.vocab_file], 
+                                            stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+        if self.encode_lock is None:
+            self.encode_lock = threading.Lock()
+        if self.decode_lock is None:
+            self.decode_lock = threading.Lock()
+
     def __del__(self):
-        pass
-        # 在对象销毁前等待10秒
-#         print("Tokenizer销毁前等待10秒...")
-#         print("Tokenizer已销毁。")
-    def __setstate__(self, d):
-        self.__dict__ = d
-        self.encoder = subprocess.Popen([path + '/cstokenizer', '--encode', vocab_file], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
-        self.errors = 'replace'
-        with open(self.vocab_file, encoding='utf-8-sig') as f:
-            self.json_dict = json.load(f)
-        self.id2token = {}
-        self.token2id = {}
-        for one in self.json_dict["CommonTokens"]:
-            self.id2token[one['TokenID']] = one['TokenStr'].encode('utf8')
-            self.token2id[bytes(one['TokenBytes'])] = one['TokenID']
-        for one in self.json_dict["SpecialTokens"]:
-            self.id2token[one['TokenID']] = one['TokenStr'].encode('utf8')
-            self.token2id[bytes(one['TokenBytes'])] = one['TokenID']
+        if hasattr(self, 'encoder') and self.encoder:
+            self.encoder.terminate()
+        if hasattr(self, 'decoder') and self.decoder:
+            self.decoder.terminate()
+
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        # 不序列化这些对象
+        state['encoder'] = None
+        state['decoder'] = None
+        state['encode_lock'] = None
+        state['decode_lock'] = None
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        # 不立即初始化，而是在需要时初始化
+        self._lazy_init()
 
     @property
     def vocab_size(self):
@@ -246,3 +259,48 @@ class LlamaTokenizer(PreTrainedTokenizer):
 
     def save_vocabulary(self, save_directory, filename_prefix: Optional[str] = None) -> Tuple[str]:
         return ''
+
+
+    def apply_chat_template(
+        self,
+        conversation: Union[List[Dict[str, str]], Dict[str, str]],
+        tokenize: bool = True,
+        add_generation_prompt: bool = False,
+        chat_template: Optional[str] = None,
+        **kwargs
+    ) -> Union[List[int], str]:
+        """
+        Applies the chat template to a conversation and optionally tokenizes the result.
+
+        Args:
+            conversation (Union[List[Dict[str, str]], Dict[str, str]]): A list of conversation turns or a single turn.
+            tokenize (bool, optional): Whether to tokenize the result. Defaults to True.
+            add_generation_prompt (bool, optional): Whether to add a generation prompt. Defaults to False.
+            chat_template (Optional[str], optional): The chat template to use. Defaults to None.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Union[List[int], str]: The processed conversation, either as a string or as token IDs.
+        """
+        if not isinstance(conversation, list):
+            conversation = [conversation]
+
+        if chat_template is None:
+            # Default Llama 2 chat template
+            chat_template = "{% for message in messages %}{{'<s>' + message['role'] + ': ' + message['content'] + '</s>'}}{% endfor %}"
+        
+        from jinja2 import Template
+        template = Template(chat_template)
+
+        # Process the conversation
+        processed_conversation = template.render(messages=conversation)
+
+        if add_generation_prompt:
+            processed_conversation += f"<s>assistant: "
+
+        if tokenize:
+            return self.encode(processed_conversation, add_special_tokens=False)
+        else:
+            return processed_conversation
+
+    

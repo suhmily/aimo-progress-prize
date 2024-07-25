@@ -173,11 +173,12 @@ def check_hub_revision_exists(training_args: SFTConfig):
 def get_tokenizer(model_args: ModelConfig, data_args: DataConfig, model_id: str, set_pad_token: bool = True) -> PreTrainedTokenizer:
     """Get the tokenizer for the model."""
     if "kwaiyi" in model_id.lower():
-        from kwaiyi.tokenization_llama_csharp_v2 import LlamaTokenizer
-        tokenizer = LlamaTokenizer.from_pretrained(
-            "training/kwaiyi/model_zoo/tokenizer.128k.data_ratio",
-            trust_remote_code=True,    bos_token = '<s>',        add_bos_token = True, add_eos_token=True
-        )
+        from kwaiyi.tokenization_llama_csharp_v2 import CustomLlamaTokenizer
+        AutoTokenizer.register(CustomLlamaTokenizer, None, CustomLlamaTokenizer)
+        tokenizer = AutoTokenizer.from_pretrained(
+            './training/kwaiyi/tokenizer.128k.data_ratio',
+            trust_remote_code=True,  add_bos_token = True, add_eos_token=True, use_fast=True)
+        
         print(f"Tokenizer: {tokenizer.bos_token_id}, {tokenizer.eos_token_id}, {tokenizer.encode('你好')}")
     else:
         tokenizer = AutoTokenizer.from_pretrained(

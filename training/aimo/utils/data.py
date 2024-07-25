@@ -15,11 +15,22 @@
 
 from typing import List, Optional, Union
 
+import datasets
 from datasets import DatasetDict, concatenate_datasets, load_dataset, load_from_disk
+from transformers import PreTrainedTokenizer
 
 from ..configs import DataConfig
 
+# 添加自定义哈希函数
+def custom_hash(obj):
+    if isinstance(obj, PreTrainedTokenizer):
+        return hash(obj.__class__.__name__ + obj.name_or_path)
+    return hash(obj)
+
+datasets.fingerprint.hash_pythonobject = custom_hash
+
 COLUMNS_TO_KEEP = ["messages", "chosen", "rejected", "prompt", "completion", "label", "score"]
+
 
 
 def get_datasets(
