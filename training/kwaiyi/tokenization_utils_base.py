@@ -2208,7 +2208,12 @@ class PreTrainedTokenizerBase(SpecialTokensMixin, PushToHubMixin):
                 logger.info(f"added tokens file saved in {added_tokens_file}")
 
         vocab_files = self.save_vocabulary(save_directory, filename_prefix=filename_prefix)
-
+        # 确保 vocab_files 是一个元组
+        if not isinstance(vocab_files, tuple):
+            vocab_files = (vocab_files,)
+        
+        # 确保 added_tokens_file 是一个元组
+        added_tokens_file = (added_tokens_file,) if added_tokens_file else tuple()
         return file_names + vocab_files + (added_tokens_file,)
 
     def save_vocabulary(self, save_directory: str, filename_prefix: Optional[str] = None) -> Tuple[str]:

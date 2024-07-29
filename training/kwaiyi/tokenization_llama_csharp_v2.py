@@ -23,6 +23,7 @@ import threading
 """Tokenization classes for LLaMA."""
 import os
 import sys
+import shutil
 import json
 from sys import *
 import subprocess
@@ -260,6 +261,13 @@ class CustomLlamaTokenizer(PreTrainedTokenizer):
     def save_vocabulary(self, save_directory, filename_prefix: Optional[str] = None) -> Tuple[str]:
         return ''
 
+    def save_pretrained(self, save_directory: Union[str, os.PathLike], legacy_format: bool = True, filename_prefix: Optional[str] = None):
+        if not os.path.isdir(save_directory):
+            os.makedirs(save_directory, exist_ok=True)
+
+        # 保存词汇表文件
+        vocab_file = os.path.join(save_directory, (filename_prefix + "-" if filename_prefix else "") + VOCAB_FILES_NAMES["vocab_file"])
+        shutil.copy(self.vocab_file, vocab_file)
 
     def apply_chat_template(
         self,

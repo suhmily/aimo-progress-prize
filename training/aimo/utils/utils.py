@@ -174,18 +174,13 @@ def get_tokenizer(model_args: ModelConfig, data_args: DataConfig, model_id: str,
     """Get the tokenizer for the model."""
     if "kwaiyi" in model_id.lower():
         from kwaiyi.tokenization_llama_csharp_v2 import CustomLlamaTokenizer
-        AutoTokenizer.register(CustomLlamaTokenizer, None, CustomLlamaTokenizer)
-        tokenizer = AutoTokenizer.from_pretrained(
-            './training/kwaiyi/tokenizer.128k.data_ratio',
-            trust_remote_code=True,  add_bos_token = True, add_eos_token=True, use_fast=True)
-        
-        print(f"Tokenizer: {tokenizer.bos_token_id}, {tokenizer.eos_token_id}, {tokenizer.encode('你好')}")
-    else:
-        tokenizer = AutoTokenizer.from_pretrained(
-            model_args.model_name_or_path,
-            revision=model_args.model_revision,
-            trust_remote_code=model_args.trust_remote_code,
-        )
+        AutoTokenizer.register(CustomLlamaTokenizer, None, CustomLlamaTokenizer)  
+    
+    tokenizer = AutoTokenizer.from_pretrained(
+        model_args.model_name_or_path,
+        revision=model_args.model_revision,
+        trust_remote_code=model_args.trust_remote_code,
+    )
 
     # Hack for Qwen-14b which doesn't have an EOS token defined in the tokenizer
     if "qwen-14b" in model_args.model_name_or_path.lower():

@@ -1,6 +1,6 @@
 # Model arguments
 # For definitions, see: src/h4/training/config.py
-model_name_or_path: /nlp_group/mlflow_monitor/gpt/pretrain/2kgpus-7b-scratch/2kgpus-7b-scratch_llama_7b_v0_128k_e1/artifacts/iter_0371000/hf_bin
+model_name_or_path: /nlp_group/mlflow_monitor/gpt/pretrain/2kgpus-7b-scratch/2kgpus-7b-scratch_llama_7b_v0_128k_e1/artifacts/iter_0373600/hf_bin
 model_revision: main
 torch_dtype: bfloat16
 attn_implementation: flash_attention_2
